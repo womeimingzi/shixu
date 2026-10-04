@@ -1,4 +1,4 @@
-import { app, BrowserWindow, Menu, Tray, Notification, ipcMain, protocol, dialog, shell, nativeImage, powerMonitor } from 'electron';
+import { app, BrowserWindow, Menu, Tray, Notification, ipcMain, protocol, dialog, shell, nativeImage, powerMonitor, net } from 'electron';
 import fs from 'node:fs';
 import path from 'node:path';
 import { randomUUID } from 'node:crypto';
@@ -7,6 +7,7 @@ import { StateStore } from './store.mjs';
 import { collectDueReminders, createSnooze } from './reminders.mjs';
 import { mergeData, validateData } from '../src/data.mjs';
 import { todayISO } from '../src/schedule.mjs';
+import { searchCities, fetchForecast, WEATHER_SOURCE } from '../src/weather.mjs';
 
 const ROOT = path.resolve(path.dirname(fileURLToPath(import.meta.url)), '..');
 const APP_ID = 'com.shixu.desktop';
@@ -33,7 +34,7 @@ const errors = [];
 const retryAfter = new Map();
 const launchArgs = ['--background'];
 const iconPath = path.join(ROOT, 'build', 'icon.png');
-const allowedFiles = new Set(['handdrawn-preview.html', 'src/app.js', 'src/styles.css', 'src/schedule.mjs', 'src/data.mjs', 'assets/mascots/handdrawn-cat-v1.png']);
+const allowedFiles = new Set(['handdrawn-preview.html', 'src/app.js', 'src/styles.css', 'src/life.css', 'src/journal.js', 'src/weather-ui.js', 'src/weather.mjs', 'src/schedule.mjs', 'src/data.mjs', 'assets/mascots/handdrawn-cat-v1.png']);
 const mimeTypes = { '.html': 'text/html; charset=utf-8', '.js': 'text/javascript; charset=utf-8', '.mjs': 'text/javascript; charset=utf-8', '.css': 'text/css; charset=utf-8', '.png': 'image/png' };
 
 function logError(error) {
@@ -142,6 +143,9 @@ function finishSelfTest() {
   });
 }
 function installIPC() {
+  registerHandler('shixu:weather-search', async query => ({ cities: await searchCities(query, net.fetch.bind(net)) }));
+  registerHandler('shixu:weather-forecast', async location => ({ forecast: await fetchForecast(location, net.fetch.bind(net)) }));
+  registerHandler('shixu:weather-source', async () => { await shell.openExternal(WEATHER_SOURCE); });
   registerHandler('shixu:load', () => ({ data: store.state.data, preferences: preferences(), info: { version: app.getVersion(), dataDirectory, packaged: app.isPackaged, notificationSupported: Notification.isSupported(), notificationError }, notice: store.notice }));
   ipcMain.on('shixu:save', (event, data) => {
     if (!trusted(event)) { event.returnValue = { ok: false, error: '无法识别的保存请求' }; return; }
@@ -161,10 +165,11 @@ function installIPC() {
     const error = await shell.openPath(dataDirectory);
     if (error) throw Error(error);
   });
-  registerHandler('shixu:export', async () => {
+  registerHandler('shixu:export', async data => {
+    const exported = validateData(data || store.state.data);
     const { canceled, filePath } = await dialog.showSaveDialog(window, { title: '导出拾序备份', defaultPath: `拾序备份-${todayISO()}.json`, filters: [{ name: '拾序备份', extensions: ['json'] }] });
     if (canceled) return { cancelled: true };
-    fs.writeFileSync(filePath, JSON.stringify(store.state.data, null, 2), { encoding: 'utf8', flush: true });
+    fs.writeFileSync(filePath, JSON.stringify(exported, null, 2), { encoding: 'utf8', flush: true });
     return { cancelled: false };
   });
   registerHandler('shixu:import', async () => {
@@ -174,7 +179,7 @@ function installIPC() {
     const imported = validateData(JSON.parse(fs.readFileSync(filePaths[0], 'utf8')));
     const merged = mergeData(store.state.data, imported, randomUUID);
     store.saveData(merged.data);
-    return { data: store.state.data, added: merged.added };
+    return { data: store.state.data, added: merged.added, journalAdded: merged.journalAdded };
   });
   registerHandler('shixu:test-notification', () => {
     deliverReminder({ title: '拾序 · 提醒已准备好', body: '这是一条测试提醒。关闭主窗口后，拾序可以留在托盘里陪着你。' }, true);

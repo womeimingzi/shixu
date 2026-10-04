@@ -8,6 +8,7 @@
   <title>拾序 · 一件一件，慢慢来</title>
   <link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'%3E%3Crect x='5' y='5' width='22' height='22' rx='7' fill='%23bc674b'/%3E%3C/svg%3E">
   <link rel="stylesheet" href="src/styles.css">
+  <link rel="stylesheet" href="src/life.css">
   <script type="module" src="src/app.js"></script>
 </head>
 <body>
@@ -31,9 +32,23 @@
         <div class="content-heading"><div><h2 id="view-title">我的一天</h2><span id="view-count"></span></div><div class="heading-actions"><button type="button" class="text-button" id="back-today" data-action="today" hidden>回到今天</button><button type="button" class="text-button" data-action="new"><span data-icon="plus"></span>详细新建</button></div></div>
         <section id="task-list" aria-label="事项列表"></section>
         <section id="upcoming-section" class="upcoming-section" aria-labelledby="upcoming-title"></section>
+        <section id="journal-invitation" class="journal-invitation" aria-label="今天的随手记"></section>
+        <section id="journal-view" hidden aria-label="随手记">
+          <div class="journal-toolbar"><label>这一天<input id="journal-date" type="date" min="2000-01-01" max="2100-12-31"></label><button type="button" class="text-button" id="journal-new">再写一篇</button></div>
+          <div class="journal-paper">
+            <label class="sr-only" for="journal-title">随笔标题</label><input id="journal-title" class="journal-title" maxlength="120" placeholder="给这段心情起个名字，也可以不写">
+            <label class="sr-only" for="journal-body">随笔正文</label><textarea id="journal-body" maxlength="50000" placeholder="今天有什么想留下的？\n一句感想、一个突然冒出的念头，或是一件很小的开心事。"></textarea>
+            <div class="journal-paper-footer"><label>此刻心情<select id="journal-mood" aria-label="此刻心情"><option value="">不选也很好</option><option value="calm">平静</option><option value="happy">开心</option><option value="inspired">有灵感</option><option value="tired">有点累</option><option value="cloudy">低落</option></select></label><span id="journal-save-state" role="status">不赶时间，写什么都可以。</span></div>
+          </div>
+          <div class="journal-editor-actions"><button type="button" class="text-button" id="journal-prompt">给我一点灵感</button><button type="button" class="danger-button" id="journal-delete" hidden>移到回收站</button></div>
+          <p id="journal-prompt-copy" class="journal-prompt" hidden></p>
+          <div class="section-heading journal-history-heading"><h2>翻翻以前</h2><label class="sr-only" for="journal-search">搜索随笔</label><input id="journal-search" type="search" placeholder="找一段文字…" maxlength="120"></div>
+          <div id="journal-history" aria-label="随笔记录"></div>
+        </section>
         <footer class="main-footer"><span></span>留一点空白，给计划之外的生活。</footer>
       </main>
       <aside class="right-panel" aria-label="日历与提醒">
+        <section id="weather-panel" class="weather-panel" aria-label="今天与明天天气"></section>
         <section class="calendar-section" aria-label="月历"><div class="calendar-heading"><h2 id="month-label"></h2><div><button type="button" class="icon-button" data-action="prev-month" aria-label="上个月"><span data-icon="left"></span></button><button type="button" class="icon-button" data-action="next-month" aria-label="下个月"><span data-icon="right"></span></button></div></div><div class="weekdays" aria-hidden="true"><span>一</span><span>二</span><span>三</span><span>四</span><span>五</span><span>六</span><span>日</span></div><div id="calendar-days" class="calendar-days"></div><div class="calendar-key"><span><i class="deadline-dot"></i>截止</span><span><i class="event-dot"></i>日程</span><button type="button" class="text-button" data-action="today">今天</button></div><div class="selected-summary" id="selected-summary"></div></section>
         <section id="deadline-panel" class="deadline-panel" aria-label="下一个截止"></section>
         <section class="reminder-note"><div class="mini-label"><span data-icon="bell"></span>每日的小提醒</div><p>每天学一点，<br>就不用赶最后一天。</p><button type="button" class="secondary-button" data-action="preview-reminder"><span data-icon="bell"></span>看看提醒的样子</button><small>当前为页内演示</small></section>
@@ -70,9 +85,17 @@
     <div class="setting-row"><div><strong id="storage-title">数据保存在当前浏览器</strong><p id="storage-copy">刷新后保留。清理浏览器数据会清除记录。</p></div><div class="backup-actions"><button type="button" class="secondary-button" data-action="export">导出备份</button><button type="button" class="secondary-button" data-action="import" id="import-button" hidden>导入备份</button></div></div>
     <div class="desktop-data-actions" hidden><button type="button" class="text-button" data-action="data-folder">打开数据文件夹</button><button type="button" class="text-button" data-action="quit">退出拾序</button></div>
     <div class="setting-row"><div><strong>回收站</strong><p>移除的事项可以在这里找回来。</p></div></div><div id="trash-list"></div>
+    <div id="journal-trash"></div>
     <div class="shortcut-note"><span><kbd>Enter</kbd> 快速记录</span><span><kbd>Alt</kbd> + <kbd>N</kbd> 详细新建</span><span><kbd>Esc</kbd> 关闭弹窗</span></div>
   </dialog>
-  <dialog id="backup-dialog" aria-labelledby="backup-title"><div class="dialog-heading"><h2 id="backup-title">保存一份记录</h2><button type="button" class="icon-button" data-close="backup-dialog" aria-label="关闭备份窗口">×</button></div><p>备份包含当前事项、打卡和主题设置。可以在桌面版的「偏好设置 → 导入备份」中继续使用。</p><footer class="dialog-footer"><a id="backup-download" class="primary-button" download>下载 JSON 备份</a><button type="button" class="secondary-button" data-close="backup-dialog">完成</button></footer></dialog>
+  <dialog id="weather-settings" aria-labelledby="weather-settings-title">
+    <div class="dialog-heading"><div><div class="eyebrow">A LITTLE LOOK OUTSIDE</div><h2 id="weather-settings-title">看看哪座城市的天气？</h2></div><button type="button" class="icon-button" data-close="weather-settings" aria-label="关闭城市选择">×</button></div>
+    <p class="form-hint">手动选择城市即可。查询会向 Open-Meteo 发送城市名或城市中心坐标，随笔和日程仍留在本机。</p>
+    <form id="weather-search-form" class="city-search"><label class="sr-only" for="weather-query">搜索城市</label><input id="weather-query" placeholder="城市名，例如 杭州 / Hangzhou" minlength="2" maxlength="80" required><button type="submit" class="primary-button" id="weather-search-button">查找</button></form>
+    <p id="weather-search-status" class="form-hint" role="status"></p><div id="weather-search-results"></div><p class="form-hint">城市数据：GeoNames，经 Open-Meteo 提供。</p>
+    <div class="dialog-footer"><button type="button" class="text-button" id="weather-disable">不显示天气，清除城市</button><span class="flex-spacer"></span><button type="button" class="text-button" data-weather-source>天气数据来源</button></div>
+  </dialog>
+  <dialog id="backup-dialog" aria-labelledby="backup-title"><div class="dialog-heading"><h2 id="backup-title">保存一份记录</h2><button type="button" class="icon-button" data-close="backup-dialog" aria-label="关闭备份窗口">×</button></div><p>备份包含事项、随笔、打卡和主题设置。可在新版桌面版的「偏好设置 → 导入备份」中继续使用。</p><footer class="dialog-footer"><a id="backup-download" class="primary-button" download>下载 JSON 备份</a><button type="button" class="secondary-button" data-close="backup-dialog">完成</button></footer></dialog>
   <aside class="notification" id="notification" aria-label="提醒预览" hidden></aside>
   <div class="toast" id="toast" role="status" hidden><span id="toast-message"></span><button type="button" id="toast-undo" hidden>撤销</button><button type="button" class="icon-button" data-action="dismiss-toast" aria-label="关闭提示"><span data-icon="close"></span></button></div>
   <noscript>请启用 JavaScript 以使用拾序。</noscript>

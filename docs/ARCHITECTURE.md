@@ -24,7 +24,10 @@ The renderer and date rules are shared by desktop and browser preview. Native ca
 | `src/styles.css` | Layout, theme variables, native window adaptation |
 | `src/app.js` | Views, editing, check-ins, completion, import/export UI |
 | `src/schedule.mjs` | Calendar arithmetic, weekly occurrences, initial demo records |
-| `src/data.mjs` | Data validation and additive import |
+| `src/data.mjs` | Data validation, v2-to-v3 migration, additive import |
+| `src/journal.js` | Journal editor, autosave, history, and recovery |
+| `src/weather.mjs` | Fixed-endpoint weather client and forecast interpretation |
+| `src/weather-ui.js` | City selection, dated forecast cards, refresh, and cache |
 | `desktop/main.mjs` | App lifecycle, window, tray, native notifications, IPC |
 | `desktop/preload.cjs` | Explicit renderer-to-main API |
 | `desktop/store.mjs` | Atomic writes, previous-save backup, recovery |
@@ -32,7 +35,7 @@ The renderer and date rules are shared by desktop and browser preview. Native ca
 
 ## Data and time
 
-The desktop state envelope contains `data`, `preferences`, `ledger`, and `snoozes`. The exported planner data has schema version `2`, a theme, and task records. Task records distinguish `task` from `event`, store date-only values as `YYYY-MM-DD`, and keep daily check-ins separate from completed weekly occurrences.
+The desktop state envelope contains `data`, `preferences`, `ledger`, and `snoozes`. The exported planner data has schema version `3`, a theme, task records, journal entries, and an optional weather location. Version 2 imports are migrated without replacing tasks. Task records distinguish `task` from `event`, store date-only values as `YYYY-MM-DD`, and keep daily check-ins separate from completed weekly occurrences. Import preserves the current weather choice and adds conflicting journal content under a new ID.
 
 Date arithmetic uses UTC to avoid daylight-saving shifts in plain dates. The meaning of “today” and scheduled reminder times currently uses **UTC+8 / Asia/Taipei**, independent of the computer's timezone. Changing this requires coordinated updates to date selection, reminder due times, persistence, and tests.
 
@@ -47,6 +50,8 @@ The data directory is `%APPDATA%\Shixu`. Saves write a temporary file before rep
 The BrowserWindow enables sandboxing and context isolation, disables Node integration, and uses a CSP. The custom `shixu://app` protocol serves an explicit local resource allowlist. New windows, navigation, and permission requests are denied. IPC checks the sending window and main frame; data and preference payloads are validated. No general filesystem or shell interface is exposed to the renderer.
 
 These are implementation safeguards, not a claim of a completed security audit. Keep dependency updates and renderer escaping in scope when reviewing changes.
+
+Weather is optional. Dedicated IPC handlers construct requests to the fixed Open-Meteo forecast and geocoding endpoints using validated city input; renderer CSP remains local-only. The browser preview calls the same endpoints directly. No task or journal content is sent. Requests time out after ten seconds, forecasts refresh roughly hourly while visible, and the cache is stored separately in localStorage. Displayed dates follow the city's IANA timezone. Clothing hints use temperatures, rain, and wind, without an AI service. See Open-Meteo's non-commercial API terms before distributing a commercial derivative.
 
 ## Validation and releases
 

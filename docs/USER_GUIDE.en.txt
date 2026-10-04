@@ -1,4 +1,4 @@
-Shixu 0.1.0 — Windows desktop planner
+Shixu 0.2.0 — Windows desktop planner
 
 GET STARTED
 Extract the entire release ZIP into a folder of your choice.
@@ -11,6 +11,11 @@ Type an item and press Enter to capture it. Click its title to edit details.
 Daily check-in records today's progress; completing an entire task stops its reminders.
 Weekly events are completed one occurrence at a time.
 The current application interface is in Simplified Chinese.
+The journal autosaves and supports optional moods, multiple entries per day,
+dated history, search, and trash recovery.
+Choose a city to enable today/tomorrow weather and clothing hints.
+Weather needs internet access; only city queries/coordinates are sent to Open-Meteo.
+Journal text and tasks remain local. Old forecasts are labeled as cached.
 
 BACKGROUND AND STARTUP
 Closing the window keeps Shixu in the system tray by default.
@@ -32,3 +37,4 @@ Records are saved in %APPDATA%\Shixu, separately from the executable.
 Each save retains the preceding version as a backup.
 Preferences offers JSON export, additive import, and an Open data folder action.
 Browser preview records and desktop records do not continuously synchronize.
+New backups include journals. Do not write v0.2 data with the v0.1 application.

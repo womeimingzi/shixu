@@ -62,7 +62,7 @@ export function initialData(today) {
   const firstWednesday = addDays(today, (3 - dateValue(today).getUTCDay() + 7) % 7);
   const common = { deleted: false, completed: false, dailyChecks: [], doneOccurrences: [], notes: '', location: '', start: '', end: '', repeat: 'none', dailyEnabled: false, dailyTime: '19:30', createdDate: today };
   return {
-    version: 2, theme: 'light',
+    version: 3, theme: 'light', journal: [], weather: { location: null },
     tasks: [
       { ...common, id: 'mooc', kind: 'task', category: 'course', title: '刷完 MOOC 课程', date: addDays(today, 14), dailyEnabled: true, notes: '每天学一点，给最后的测验留些时间。' },
       { ...common, id: 'meeting', kind: 'event', category: 'research', title: '每周组会', date: firstWednesday, start: '20:00', end: '21:00', repeat: 'weekly', notes: '提前整理本周进展，以及想和老师讨论的问题。' },

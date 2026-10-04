@@ -41,6 +41,8 @@ A course to finish. A seminar date buried in a chat. A lab meeting every Wednesd
 | ☀️ A calmer workspace | Cream and warm dark themes, system theme support, and a hand-drawn orange cat |
 | ✍️ Capture now, organize later | Enter to add, detailed editing, categories, calendar filtering, and deadline countdowns |
 | 🗂️ Keep your records close | Local files, previous-save backup, JSON export/import, and trash recovery |
+| 📖 Leave a few words for today | Freeform journal, autosave, optional mood, dated history, search, and recovery |
+| 🌤️ Prepare for tomorrow | Choose a city for today/tomorrow forecasts, rain probability, and clothing suggestions |
 
 <details>
 <summary><strong>See both themes</strong></summary>
@@ -94,14 +96,35 @@ Delivery records and snoozes are stored locally to avoid repeating notifications
 
 ## 💾 Your records stay with you
 
-Data lives in **`%APPDATA%\Shixu`**, separately from the application folder. Shixu has no account system, telemetry, or cloud service; everyday scheduling and reminders run locally.
+Data lives in **`%APPDATA%\Shixu`**, separately from the application folder. Shixu has no account system, telemetry, or record synchronization service; everyday scheduling and reminders run locally. Enabling weather accesses the external service described below.
 
-- `state.json` contains records, preferences, the delivery ledger, and snoozes.
+- `state.json` contains tasks, journal entries, the selected city, preferences, the delivery ledger, and snoozes.
 - `state.backup.json` retains the preceding successful save, not a complete version history.
 - Preferences includes Open data folder, JSON export, and additive import. Import preserves existing items; different content sharing an ID is added as a new item.
 - Export independent backups periodically. The browser preview uses browser storage and does not automatically sync with the desktop application.
 
 To update, exit the tray application and replace the entire application folder with a freshly extracted release. The data directory remains separate. Updates are currently manual.
+
+v0.2 reads v0.1 records automatically. Export a backup before updating, and do not use v0.1 to write into the newer data directory: journals require the new backup format.
+
+## 📖 Journaling and weather
+
+Use the daily invitation or the sidebar's journal view to write freely. Titles and moods are optional; entries autosave. Multiple entries per day, date selection, history search, and trash recovery are supported, without streaks or word-count targets.
+
+<details>
+<summary><strong>Preview journaling and weather</strong></summary>
+
+| Day | Night |
+| :---: | :---: |
+| ![Journal and weather in the day theme](assets/previews/shixu-journal-day.jpg) | ![Journal and weather in the night theme](assets/previews/shixu-journal-night.jpg) |
+
+Screenshots use fictional journal text and Hangzhou as a demonstration city. First launch does not select a city or create sample journal entries.
+
+</details>
+
+Weather starts with a city picker. Once configured, it shows today and tomorrow's forecasts, temperatures, rain probability, and simple clothing or umbrella suggestions. Forecast dates follow the selected city's timezone; task scheduling remains UTC+8. Offline forecasts are labeled as cached, and stale forecasts do not generate new clothing suggestions. Weather is shown in the card, without additional system notifications.
+
+Weather is provided by [Open-Meteo](https://open-meteo.com/), with city data from [GeoNames](https://www.geonames.org/). Only the search term or city-center coordinates are sent; device location, journal text, and tasks are not transmitted. The free API is for non-commercial use and weather data is CC BY 4.0. Commercial distributions must arrange appropriate service access; see [terms](https://open-meteo.com/en/terms). Clothing hints are simple forecast-based suggestions to adjust to personal comfort.
 
 <a id="development"></a>
 
@@ -151,7 +174,7 @@ Read the [architecture notes](docs/ARCHITECTURE.md), [asset notes](docs/ASSETS.m
 
 ## 🤝 Help shape the next version
 
-This is Shixu's first public release. [Issues](https://github.com/womeimingzi/shixu/issues) and contributions are welcome, including accessibility improvements, an English interface, configurable timezones, and reminder rules. These are possible next steps, not existing features.
+Shixu is still evolving. [Issues](https://github.com/womeimingzi/shixu/issues) and contributions are welcome, including accessibility improvements, an English interface, configurable task timezones, and reminder rules. These are possible next steps, not existing features.
 
 Remove personal schedule details from screenshots and logs before sharing. See [CONTRIBUTING.md](CONTRIBUTING.md) and [CHANGELOG.md](CHANGELOG.md).
 

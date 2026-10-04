@@ -1,4 +1,7 @@
 import { todayISO, dateLabel, weekday, daysBetween, occursOn, isDone, dailyApplies, nextOccurrence, dayItems, monthDays, changeMonth, toggleDaily, completeTask, initialData } from './schedule.mjs';
+import { validateData } from './data.mjs';
+import { initJournal } from './journal.js';
+import { initWeather } from './weather-ui.js';
 
 const $ = selector => document.querySelector(selector);
 const escapeHTML = value => String(value ?? '').replace(/[&<>"']/g, c => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c]));
@@ -21,6 +24,7 @@ const paths = {
   clock: '<circle cx="12" cy="12" r="9"/><path d="M12 6v6l4 2"/>',
   bell: '<path d="M18 8a6 6 0 0 0-12 0c0 7-3 8-3 8h18s-3-1-3-8M10 20h4"/>',
   leaf: '<path d="M20 3c-8-1-16 3-16 10a6 6 0 0 0 10 4c4-4 5-8 6-14ZM4 21l10-11"/>',
+  book: '<path d="M4 4h6c2 0 2 2 2 2s0-2 2-2h6v16h-6c-2 0-2 1-2 1s0-1-2-1H4ZM12 6v15"/>',
 };
 const icon = name => `<svg class="icon" viewBox="0 0 24 24" aria-hidden="true">${paths[name] || paths.circle}</svg>`;
 document.querySelectorAll('[data-icon]').forEach(el => { el.innerHTML = icon(el.dataset.icon); });
@@ -42,8 +46,7 @@ try {
   } else savedRaw = localStorage.getItem(STORAGE_KEY);
   if (savedRaw) {
     const parsed = JSON.parse(savedRaw);
-    if (parsed.version !== 2 || !Array.isArray(parsed.tasks)) throw Error('invalid data');
-    data = parsed;
+    data = validateData(parsed);
   }
 } catch {
   unreadableBackup = savedRaw;
@@ -59,6 +62,8 @@ let reminderId;
 let reminderContext;
 let snoozeTimer;
 let notificationOpener;
+let journal;
+let weather;
 
 function save() {
   try {
@@ -132,7 +137,7 @@ function completedEntries() {
 }
 function renderNav() {
   const counts = { today: todayTasks().length, all: activeTasks().filter(t => !t.completed).length, done: completedEntries().length };
-  $('#main-nav').innerHTML = [['today', 'sun', '我的一天'], ['schedule', 'calendar', '日程安排'], ['all', 'inbox', '全部事项'], ['done', 'circle', '已完成']].map(([id, symbol, title]) => `<button type="button" class="nav-button" data-view="${id}" ${view === id ? 'aria-current="page"' : ''}>${icon(symbol)}<span>${title}</span>${counts[id] !== undefined ? `<span class="nav-count">${String(counts[id]).padStart(2, '0')}</span>` : ''}</button>`).join('');
+  $('#main-nav').innerHTML = [['today', 'sun', '我的一天'], ['schedule', 'calendar', '日程安排'], ['all', 'inbox', '全部事项'], ['done', 'circle', '已完成'], ['journal', 'book', '随手记']].map(([id, symbol, title]) => `<button type="button" class="nav-button" data-view="${id}" ${view === id ? 'aria-current="page"' : ''}>${icon(symbol)}<span>${title}</span>${counts[id] !== undefined ? `<span class="nav-count">${String(counts[id]).padStart(2, '0')}</span>` : ''}</button>`).join('');
   $('#category-nav').innerHTML = Object.entries(categoryNames).map(([id, title]) => `<button type="button" class="nav-button category-button" data-view="${id}" ${view === id ? 'aria-current="page"' : ''}><i class="category-dot ${id}"></i>${title}</button>`).join('');
 }
 function dueLabel(task, day) {
@@ -212,7 +217,8 @@ function renderCalendar() {
     return `<button type="button" class="calendar-day ${today === day ? 'is-today' : ''} ${deadline ? 'has-deadline' : ''}" data-action="select-day" data-day="${day}" aria-pressed="${selectedDay === day}" ${today === day ? 'aria-current="date"' : ''} aria-label="${dateLabel(day, true)} ${weekday(day)}${deadline ? '，有截止事项' : ''}${event ? '，有日程' : ''}">${Number(day.slice(8))}<span class="dots">${deadline ? '<i class="deadline-dot"></i>' : ''}${event ? '<i></i>' : ''}</span></button>`;
   }).join('');
   const selected = dayItems(activeTasks(), selectedDay);
-  $('#selected-summary').innerHTML = `${dateLabel(selectedDay)} · ${weekday(selectedDay)}<p>${selected.length ? `${selected.length} 件安排${selected.some(t => dailyApplies(t, selectedDay)) ? '，含每日推进' : ''}` : '暂无安排，留一点自己的时间。'}</p>`;
+  const journalCount = data.journal.filter(entry => !entry.deleted && entry.date === selectedDay).length;
+  $('#selected-summary').innerHTML = `${dateLabel(selectedDay)} · ${weekday(selectedDay)}<p>${view === 'journal' ? (journalCount ? `${journalCount} 篇随笔，记录了这一天。` : '这一天，还可以留下一点文字。') : selected.length ? `${selected.length} 件安排${selected.some(t => dailyApplies(t, selectedDay)) ? '，含每日推进' : ''}` : '暂无安排，留一点自己的时间。'}</p>`;
   const deadlines = activeTasks().filter(t => !t.completed && t.kind === 'task' && t.date).sort((a, b) => a.date.localeCompare(b.date));
   const nearest = deadlines[0];
   if (nearest) {
@@ -222,17 +228,31 @@ function renderCalendar() {
 }
 function renderTrash() {
   const trash = data.tasks.filter(t => t.deleted);
-  $('#trash-list').innerHTML = trash.length ? trash.map(t => `<div class="trash-row"><span>${escapeHTML(t.title)}</span><button type="button" class="text-button" data-action="restore-trash" data-id="${escapeHTML(t.id)}">恢复</button></div>`).join('') : '<p class="trash-empty">回收站是空的。</p>';
+  $('#trash-list').innerHTML = trash.length ? trash.map(t => `<div class="trash-row"><span>${escapeHTML(t.title)}</span><button type="button" class="text-button" data-action="restore-trash" data-id="${escapeHTML(t.id)}">恢复</button></div>`).join('') : data.journal.some(entry => entry.deleted) ? '' : '<p class="trash-empty">回收站是空的。</p>';
 }
 function render() {
   const focused = document.activeElement;
   const focusKey = focused?.dataset?.action ? { action: focused.dataset.action, id: focused.dataset.id, day: focused.dataset.day } : null;
   $('#date-line').textContent = new Intl.DateTimeFormat('en-US', { weekday: 'long', month: 'long', day: '2-digit', year: 'numeric', timeZone: 'Asia/Taipei' }).format(new Date()).toUpperCase();
-  renderNav(); renderTasks(); renderCalendar(); renderTrash(); storageStatus();
+  const writing = view === 'journal';
+  $('#journal-view').hidden = !writing;
+  $('#quick-form').hidden = writing;
+  $('.content-heading').hidden = writing;
+  $('#task-list').hidden = writing;
+  $('h1').innerHTML = writing ? '留一点字，<br>给今天。' : '一件一件，<br>慢慢来。';
+  renderNav();
+  if (!writing) renderTasks();
+  else { $('#upcoming-section').hidden = true; $('#greeting-copy').textContent = '不必写得很好，这里只属于你。'; journal?.render(); }
+  renderJournalInvitation(); renderCalendar(); renderTrash(); storageStatus();
   if (focusKey && !document.contains(focused)) {
     const same = [...document.querySelectorAll('[data-action]')].find(el => el.dataset.action === focusKey.action && el.dataset.id === focusKey.id && el.dataset.day === focusKey.day);
     (same || $('#main-content')).focus({ preventScroll: true });
   }
+}
+function renderJournalInvitation() {
+  $('#journal-invitation').hidden = view !== 'today';
+  const written = data.journal.some(entry => !entry.deleted && entry.date === today);
+  $('#journal-invitation').innerHTML = `<div><h2>给今天留一点字</h2><p>${written ? '想起来什么，就接着写一点。' : '感想、灵感，或一件很小的开心事。'}</p></div><button type="button" class="soft-button" data-action="journal">${icon('book')}${written ? '接着写' : '随手记'}</button>`;
 }
 function goToday() { view = 'today'; selectedDay = today; month = today.slice(0, 7); render(); }
 
@@ -335,8 +355,9 @@ function closeReminder(restoreFocus = true) {
   if (restoreFocus && notificationOpener?.isConnected) notificationOpener.focus({ preventScroll: true });
 }
 async function exportData() {
+  journal?.flush();
   if (desktop) {
-    const result = await desktop.exportData();
+    const result = await desktop.exportData(data);
     if (!result.ok) toast(result.error);
     else if (!result.cancelled) toast('备份已导出');
     return;
@@ -353,18 +374,19 @@ document.addEventListener('click', event => {
   if (button.matches('.brand')) { event.preventDefault(); goToday(); return; }
   if (button.dataset.close) { document.getElementById(button.dataset.close).close(); return; }
   if (button.dataset.themeChoice) { data.theme = button.dataset.themeChoice; save(); applyTheme(); return; }
-  if (button.dataset.view) { view = button.dataset.view; if (view === 'today') goToday(); else render(); return; }
+  if (button.dataset.view) { view = button.dataset.view; if (view === 'journal') journal.openDay(); if (view === 'today') goToday(); else render(); return; }
   const { action, id, day } = button.dataset;
   switch (action) {
     case 'new': openEditor(); break;
+    case 'journal': view = 'journal'; journal.openDay(); render(); $('#journal-body').focus(); break;
     case 'edit': openEditor(id); break;
     case 'daily': checkIn(id); break;
     case 'complete': finish(id, day || today); break;
     case 'restore-done': restoreDone(id, day); break;
     case 'cat': celebrate('喵，今天也陪着你。'); break;
-    case 'settings': renderTrash(); $('#settings').showModal(); break;
+    case 'settings': renderTrash(); journal.render(); $('#settings').showModal(); break;
     case 'today': goToday(); break;
-    case 'select-day': selectedDay = day; view = 'schedule'; render(); break;
+    case 'select-day': selectedDay = day; if (view === 'journal') journal.openDay(day); else view = 'schedule'; render(); break;
     case 'prev-month': month = changeMonth(month, -1); renderCalendar(); break;
     case 'next-month': month = changeMonth(month, 1); renderCalendar(); break;
     case 'archive': {
@@ -421,8 +443,8 @@ window.addEventListener('storage', event => {
   if (event.key !== STORAGE_KEY || !event.newValue) return;
   try {
     const incoming = JSON.parse(event.newValue);
-    if (incoming.version !== 2 || !Array.isArray(incoming.tasks)) return;
-    data = incoming; render(); applyTheme();
+    if (journal?.dirty) { toast('另一窗口更新了记录，请先保存当前文字'); return; }
+    data = validateData(incoming); journal?.refresh(); weather?.reset(); render(); applyTheme();
   } catch { /* Keep the current data if another tab writes invalid storage. */ }
 });
 async function importData() {
@@ -430,8 +452,8 @@ async function importData() {
   const result = await desktop.importData();
   if (!result.ok) { toast(result.error); return; }
   if (result.cancelled) return;
-  data = result.data; view = 'all'; render(); applyTheme();
-  toast(`已导入 ${result.added} 件事项，原有记录已保留`);
+  data = result.data; view = 'all'; journal.refresh(); weather.reset(); render(); applyTheme();
+  toast(`已导入 ${result.added} 件事项、${result.journalAdded || 0} 篇随笔，原有记录已保留`);
 }
 function renderDesktopPreferences() {
   document.querySelectorAll('[data-preference]').forEach(input => { input.checked = !!desktopState.preferences[input.dataset.preference]; });
@@ -468,6 +490,8 @@ if (desktop && desktopState?.ok) {
     $('#notification').hidden = false;
   });
 }
+journal = initJournal({ getData: () => data, save, toast, escapeHTML, onChange: () => { renderJournalInvitation(); renderCalendar(); renderTrash(); } });
+weather = initWeather({ getData: () => data, save, desktop, escapeHTML, toast });
 render(); applyTheme();
 if (!storageError) save();
 if (desktopState?.notice) toast(desktopState.notice);

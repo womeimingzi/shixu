@@ -1,5 +1,13 @@
 # Changelog / 更新记录
 
+## 0.2.0 — 2026-10-04
+
+- 新增随手记：自动保存、可选心情、多篇记录、日期回看、搜索与回收站恢复。
+- 新增可选城市天气：今明预报、降雨概率、穿衣建议与离线缓存提示。
+- 数据升级到 v3，兼容读取旧记录，备份与追加导入包含随笔。
+
+English: adds an autosaving journal with optional moods, dated history, search, and recovery; optional city weather with today/tomorrow forecasts, clothing hints, and cache status. Data format v3 reads old records and includes journals in additive imports and backups.
+
 ## 0.1.0 — 2026-10-04
 
 拾序的第一个公开版本 / First public release.
