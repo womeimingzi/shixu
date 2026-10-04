@@ -10,8 +10,8 @@
 从课程 DDL 到每周组会，让忙碌的日子慢慢有序。
 
 [![Windows x64](https://img.shields.io/badge/Windows-x64-8b947a?style=flat-square)](https://github.com/womeimingzi/shixu/releases/latest)
-[![Release](https://img.shields.io/github/v/release/womeimingzi/shixu?color=b7775c&style=flat-square)](https://github.com/womeimingzi/shixu/releases/latest)
-[![Checks](https://github.com/womeimingzi/shixu/actions/workflows/checks.yml/badge.svg)](https://github.com/womeimingzi/shixu/actions/workflows/checks.yml)
+[![Release](https://img.shields.io/github/v/release/womeimingzi/shixu?color=b7775c&style=flat-square&label=release&cacheSeconds=300)](https://github.com/womeimingzi/shixu/releases/latest)
+[![Checks](https://github.com/womeimingzi/shixu/actions/workflows/checks.yml/badge.svg?branch=main)](https://github.com/womeimingzi/shixu/actions/workflows/checks.yml)
 [![MIT](https://img.shields.io/badge/License-MIT-c4a36b?style=flat-square)](LICENSE)
 
 **简体中文** · [English](README.en.md)
