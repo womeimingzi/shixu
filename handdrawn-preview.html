@@ -37,7 +37,7 @@
           <div class="journal-toolbar"><label>这一天<input id="journal-date" type="date" min="2000-01-01" max="2100-12-31"></label><button type="button" class="text-button" id="journal-new">再写一篇</button></div>
           <div class="journal-paper">
             <label class="sr-only" for="journal-title">随笔标题</label><input id="journal-title" class="journal-title" maxlength="120" placeholder="给这段心情起个名字，也可以不写">
-            <label class="sr-only" for="journal-body">随笔正文</label><textarea id="journal-body" maxlength="50000" placeholder="今天有什么想留下的？\n一句感想、一个突然冒出的念头，或是一件很小的开心事。"></textarea>
+            <label class="sr-only" for="journal-body">随笔正文</label><textarea id="journal-body" maxlength="50000" placeholder="今天有什么想留下的？&#10;一句感想、一个突然冒出的念头，或是一件很小的开心事。"></textarea>
             <div class="journal-paper-footer"><label>此刻心情<select id="journal-mood" aria-label="此刻心情"><option value="">不选也很好</option><option value="calm">平静</option><option value="happy">开心</option><option value="inspired">有灵感</option><option value="tired">有点累</option><option value="cloudy">低落</option></select></label><span id="journal-save-state" role="status">不赶时间，写什么都可以。</span></div>
           </div>
           <div class="journal-editor-actions"><button type="button" class="text-button" id="journal-prompt">给我一点灵感</button><button type="button" class="danger-button" id="journal-delete" hidden>移到回收站</button></div>
