@@ -16,7 +16,7 @@ Make room for coursework, research, and the rest of your day.
 
 [简体中文](README.md) · **English**
 
-[Download](https://github.com/womeimingzi/shixu/releases/latest) · [Get started](#-get-started) · [Develop](#-run-from-source) · [Share feedback](https://github.com/womeimingzi/shixu/issues)
+[Download](https://github.com/womeimingzi/shixu/releases/latest) · [Get started](#get-started) · [Develop](#development) · [Share feedback](https://github.com/womeimingzi/shixu/issues)
 
 </div>
 
@@ -50,6 +50,8 @@ A course to finish. A seminar date buried in a chat. A lab meeting every Wednesd
 | ![Day theme](assets/previews/shixu-day.jpg) | ![Night theme](assets/previews/shixu-night.jpg) |
 
 </details>
+
+<a id="get-started"></a>
 
 ## 🐾 Get started
 
@@ -100,6 +102,8 @@ Data lives in **`%APPDATA%\Shixu`**, separately from the application folder. Shi
 - Export independent backups periodically. The browser preview uses browser storage and does not automatically sync with the desktop application.
 
 To update, exit the tray application and replace the entire application folder with a freshly extracted release. The data directory remains separate. Updates are currently manual.
+
+<a id="development"></a>
 
 ## 🛠️ Run from source
 

@@ -16,7 +16,7 @@
 
 **简体中文** · [English](README.en.md)
 
-[下载桌面版](https://github.com/womeimingzi/shixu/releases/latest) · [快速开始](#-三步开始) · [从源码运行](#-从源码运行) · [反馈建议](https://github.com/womeimingzi/shixu/issues)
+[下载桌面版](https://github.com/womeimingzi/shixu/releases/latest) · [快速开始](#get-started) · [从源码运行](#development) · [反馈建议](https://github.com/womeimingzi/shixu/issues)
 
 </div>
 
@@ -50,6 +50,8 @@ MOOC 还没刷完，报告时间记在聊天记录里，每周三的组会又快
 | ![白天界面](assets/previews/shixu-day.jpg) | ![夜间界面](assets/previews/shixu-night.jpg) |
 
 </details>
+
+<a id="get-started"></a>
 
 ## 🐾 三步开始
 
@@ -88,7 +90,7 @@ MOOC 还没刷完，报告时间记在聊天记录里，每周三的组会又快
 
 发送记录和稍后提醒会保存在本机，避免每次启动重复发送。电脑恢复运行时，会检查并补发仍有效的提醒。
 
-**当前边界：**所有日程时间固定按 UTC+8 计算；软件完全退出、电脑睡眠或关机时无法发送提醒。Windows 勿扰与通知设置也可能影响显示。当前没有手机推送、云同步、自动更新或自定义重复规则。
+**当前边界：** 所有日程时间固定按 UTC+8 计算；软件完全退出、电脑睡眠或关机时无法发送提醒。Windows 勿扰与通知设置也可能影响显示。当前没有手机推送、云同步、自动更新或自定义重复规则。
 
 ## 💾 记录属于你
 
@@ -100,6 +102,8 @@ MOOC 还没刷完，报告时间记在聊天记录里，每周三的组会又快
 - 建议定期导出独立备份。网页预览使用浏览器本地存储，与桌面版不会自动同步。
 
 更新时先退出托盘中的程序，再完整替换程序目录；本机数据目录保持独立。目前需要手动下载新版。
+
+<a id="development"></a>
 
 ## 🛠️ 从源码运行
 
