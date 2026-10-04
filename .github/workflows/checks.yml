@@ -1,0 +1,45 @@
+name: Windows checks
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  windows:
+    runs-on: windows-latest
+    timeout-minutes: 20
+    steps:
+      - uses: actions/checkout@v7.0.1
+      - uses: actions/setup-node@v7.0.0
+        with:
+          node-version: 24
+          cache: npm
+      - run: npm ci
+      - run: npm run setup:runtime
+      - run: npm test
+      - run: npm run dist
+      - name: Packaged app smoke test
+        shell: pwsh
+        run: |
+          $env:SHIXU_TEST_DIR = Join-Path $env:RUNNER_TEMP 'shixu-smoke'
+          Remove-Item Env:ELECTRON_RUN_AS_NODE -ErrorAction SilentlyContinue
+          $exe = Get-ChildItem -LiteralPath 'dist/win-unpacked' -Filter '*.exe' | Select-Object -First 1
+          $process = Start-Process -FilePath $exe.FullName -ArgumentList '--self-test' -WindowStyle Hidden -PassThru
+          if (-not $process.WaitForExit(60000)) { $process.Kill(); throw 'Smoke test timed out' }
+          $report = Get-Content -LiteralPath (Join-Path $env:SHIXU_TEST_DIR 'smoke-report.json') -Raw | ConvertFrom-Json
+          $report | ConvertTo-Json -Depth 5
+          if ($process.ExitCode -ne 0 -or -not $report.ok -or -not $report.rendererReady -or -not $report.pageLoaded -or -not $report.trayCreated -or -not $report.closeHidesToTray) { throw 'Smoke test failed' }
+      - run: npm run package:zip
+      - uses: actions/upload-artifact@v7.0.1
+        with:
+          name: Shixu-windows-x64
+          path: |
+            dist/Shixu-*-windows-x64.zip
+            dist/SHA256SUMS.txt
+          if-no-files-found: error
+          retention-days: 14

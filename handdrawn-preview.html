@@ -1,0 +1,80 @@
+<!doctype html>
+<html lang="zh-CN" data-theme="light">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="color-scheme" content="light dark">
+  <meta name="theme-color" content="#faf8f2">
+  <title>拾序 · 一件一件，慢慢来</title>
+  <link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'%3E%3Crect x='5' y='5' width='22' height='22' rx='7' fill='%23bc674b'/%3E%3C/svg%3E">
+  <link rel="stylesheet" href="src/styles.css">
+  <script type="module" src="src/app.js"></script>
+</head>
+<body>
+  <div class="app-shell">
+    <header class="window-bar"><span><i class="brand-square"></i> 拾序 · 个人日程</span><span class="preview-label">本地交互预览</span><div class="window-controls" hidden><button type="button" data-action="window-minimize" aria-label="最小化">−</button><button type="button" data-action="window-maximize" aria-label="最大化或还原">□</button><button type="button" data-action="window-close" aria-label="关闭窗口">×</button></div></header>
+    <div class="workspace">
+      <aside class="sidebar" aria-label="主导航">
+        <a class="brand" href="#today" aria-label="拾序，回到我的一天"><span class="cat brand-cat" aria-hidden="true"></span><span>拾序<small>SHIXU</small></span></a>
+        <nav id="main-nav" aria-label="事项视图"></nav>
+        <div class="category-label">我的分类</div>
+        <nav id="category-nav" aria-label="事项分类"></nav>
+        <div class="sidebar-bottom">
+          <div class="theme-switch" role="group" aria-label="外观模式"><button type="button" data-theme-choice="light" title="白天 · 奶油书桌" aria-label="白天模式"></button><button type="button" data-theme-choice="dark" title="夜间 · 午夜手记" aria-label="夜间模式"></button><button type="button" data-theme-choice="system" title="跟随系统" aria-label="跟随系统主题"></button></div>
+          <button type="button" class="nav-button" data-action="settings"><span data-icon="settings"></span>偏好设置</button>
+          <div class="storage-state" id="storage-state" role="status"><i></i>已保存到此浏览器</div>
+        </div>
+      </aside>
+      <main id="main-content" tabindex="-1">
+        <header class="greeting"><div><div class="eyebrow" id="date-line"></div><h1>一件一件，<br>慢慢来。</h1><p id="greeting-copy">把事情放在这里，把心思留给当下。</p></div><div class="companion"><button type="button" data-action="cat" class="cat-button" aria-label="和小橘猫打招呼"><span class="cat" id="companion-cat" role="img" aria-label="坐着陪你的小橘猫"></span></button><p id="cat-caption" aria-live="polite">我在这里陪你。</p></div></header>
+        <form id="quick-form" class="quick-add"><span data-icon="plus"></span><input id="quick-title" name="title" aria-label="快速记录一件事" placeholder="有什么事，先记在这里…" maxlength="120" autocomplete="off" required><button type="submit" class="quick-submit" title="Enter 添加" aria-label="快速添加"><span data-icon="enter"></span></button></form>
+        <div class="content-heading"><div><h2 id="view-title">我的一天</h2><span id="view-count"></span></div><div class="heading-actions"><button type="button" class="text-button" id="back-today" data-action="today" hidden>回到今天</button><button type="button" class="text-button" data-action="new"><span data-icon="plus"></span>详细新建</button></div></div>
+        <section id="task-list" aria-label="事项列表"></section>
+        <section id="upcoming-section" class="upcoming-section" aria-labelledby="upcoming-title"></section>
+        <footer class="main-footer"><span></span>留一点空白，给计划之外的生活。</footer>
+      </main>
+      <aside class="right-panel" aria-label="日历与提醒">
+        <section class="calendar-section" aria-label="月历"><div class="calendar-heading"><h2 id="month-label"></h2><div><button type="button" class="icon-button" data-action="prev-month" aria-label="上个月"><span data-icon="left"></span></button><button type="button" class="icon-button" data-action="next-month" aria-label="下个月"><span data-icon="right"></span></button></div></div><div class="weekdays" aria-hidden="true"><span>一</span><span>二</span><span>三</span><span>四</span><span>五</span><span>六</span><span>日</span></div><div id="calendar-days" class="calendar-days"></div><div class="calendar-key"><span><i class="deadline-dot"></i>截止</span><span><i class="event-dot"></i>日程</span><button type="button" class="text-button" data-action="today">今天</button></div><div class="selected-summary" id="selected-summary"></div></section>
+        <section id="deadline-panel" class="deadline-panel" aria-label="下一个截止"></section>
+        <section class="reminder-note"><div class="mini-label"><span data-icon="bell"></span>每日的小提醒</div><p>每天学一点，<br>就不用赶最后一天。</p><button type="button" class="secondary-button" data-action="preview-reminder"><span data-icon="bell"></span>看看提醒的样子</button><small>当前为页内演示</small></section>
+        <p class="right-footer">A LITTLE ORDER,<br>EVERY DAY.</p>
+      </aside>
+    </div>
+  </div>
+  <dialog id="editor" aria-labelledby="editor-title">
+    <form id="editor-form">
+      <div class="dialog-heading"><div><div class="eyebrow">MAKE A LITTLE ROOM</div><h2 id="editor-title">记下一件事</h2></div><button type="button" class="icon-button" data-close="editor" aria-label="关闭事项编辑"><span data-icon="close"></span></button></div>
+      <input type="hidden" name="id">
+      <label>事项名称<input name="title" required maxlength="120" placeholder="例如：刷完 MOOC 课程" autocomplete="off"></label>
+      <div class="form-grid"><label>类型<select name="kind"><option value="task">待办 · 有截止日期的任务</option><option value="event">日程 · 在某个时间参加</option></select></label><label>分类<select name="category"><option value="course">课程学习</option><option value="research">科研日常</option><option value="other">生活杂事</option></select></label></div>
+      <div class="form-grid"><label><span id="date-field-label">截止日期（可留空）</span><input type="date" name="date" min="2000-01-01" max="2100-12-31"></label><label id="repeat-field">重复<select name="repeat"><option value="none">不重复</option><option value="weekly">每周 · 从所选日期开始</option></select></label></div>
+      <div id="event-fields"><div class="form-grid"><label>开始时间（可留空）<input type="time" name="start"></label><label>结束时间（可留空）<input type="time" name="end"></label></div><label>地点<input name="location" maxlength="160" placeholder="教室、会议室或线上链接"></label></div>
+      <div id="daily-fields" class="daily-fields"><label class="check-label"><input type="checkbox" name="dailyEnabled"><span><strong>每天提醒我推进一点</strong><small>每天单独打卡，整件事完成后停止。</small></span></label><label class="daily-time-label">每日时间<input type="time" name="dailyTime" value="19:30"></label></div>
+      <p class="form-hint reminder-hint" id="reminder-hint">预览版会保存提醒设置，暂不自动发送通知。</p>
+      <label>备注<textarea name="notes" rows="3" maxlength="2000" placeholder="记下具体要求，或给未来的自己留句话。"></textarea></label>
+      <p class="form-hint" id="series-hint" hidden>编辑后会更新整组重复日程；单次完成只影响当天。</p><p class="form-error" id="editor-error" role="alert" hidden></p>
+      <footer class="dialog-footer"><button type="button" class="danger-button" data-action="archive" id="archive-button" hidden>移到回收站</button><span class="flex-spacer"></span><button type="button" class="secondary-button" data-close="editor">取消</button><button type="submit" class="primary-button">保存事项</button></footer>
+    </form>
+  </dialog>
+  <dialog id="settings" aria-labelledby="settings-title">
+    <div class="dialog-heading"><div><div class="eyebrow">YOUR QUIET CORNER</div><h2 id="settings-title">让这里更像你的书桌</h2></div><button type="button" class="icon-button" data-close="settings" aria-label="关闭偏好设置"><span data-icon="close"></span></button></div>
+    <div class="setting-row"><div><strong>外观</strong><p>白天和夜间使用同一套布局。</p></div><select id="theme-select" aria-label="选择主题"><option value="light">奶油书桌</option><option value="dark">午夜手记</option><option value="system">跟随系统</option></select></div>
+    <div class="setting-row" id="preview-settings"><div><strong>开机自启动 · 托盘后台提醒</strong><p>计划用于正式 Windows 版，当前预览尚未接入。</p></div><span class="status-pill">待接入</span></div>
+    <div id="desktop-settings" hidden>
+      <label class="setting-row desktop-toggle"><span><strong>开机自动启动</strong><small>登录 Windows 后安静地留在托盘。</small></span><input type="checkbox" id="auto-start" data-preference="autoStart"></label>
+      <label class="setting-row desktop-toggle"><span><strong>关闭窗口后留在托盘</strong><small>日程继续提醒；右键托盘图标可以彻底退出。</small></span><input type="checkbox" id="close-to-tray" data-preference="closeToTray"></label>
+      <label class="setting-row desktop-toggle"><span><strong>系统通知</strong><small>每日按设定时间提醒；日程提前 10 分钟；截止前一天及当天 9 点。</small></span><input type="checkbox" id="native-notifications" data-preference="notifications"></label>
+      <p class="form-hint desktop-reminder-help">电脑关机或睡眠时无法提醒；恢复运行后补发仍有效的提醒。通知可能受 Windows 勿扰模式影响。</p>
+      <button type="button" class="secondary-button" data-action="test-notification">发送一条测试提醒</button>
+    </div>
+    <div class="setting-row"><div><strong id="storage-title">数据保存在当前浏览器</strong><p id="storage-copy">刷新后保留。清理浏览器数据会清除记录。</p></div><div class="backup-actions"><button type="button" class="secondary-button" data-action="export">导出备份</button><button type="button" class="secondary-button" data-action="import" id="import-button" hidden>导入备份</button></div></div>
+    <div class="desktop-data-actions" hidden><button type="button" class="text-button" data-action="data-folder">打开数据文件夹</button><button type="button" class="text-button" data-action="quit">退出拾序</button></div>
+    <div class="setting-row"><div><strong>回收站</strong><p>移除的事项可以在这里找回来。</p></div></div><div id="trash-list"></div>
+    <div class="shortcut-note"><span><kbd>Enter</kbd> 快速记录</span><span><kbd>Alt</kbd> + <kbd>N</kbd> 详细新建</span><span><kbd>Esc</kbd> 关闭弹窗</span></div>
+  </dialog>
+  <dialog id="backup-dialog" aria-labelledby="backup-title"><div class="dialog-heading"><h2 id="backup-title">保存一份记录</h2><button type="button" class="icon-button" data-close="backup-dialog" aria-label="关闭备份窗口">×</button></div><p>备份包含当前事项、打卡和主题设置。可以在桌面版的「偏好设置 → 导入备份」中继续使用。</p><footer class="dialog-footer"><a id="backup-download" class="primary-button" download>下载 JSON 备份</a><button type="button" class="secondary-button" data-close="backup-dialog">完成</button></footer></dialog>
+  <aside class="notification" id="notification" aria-label="提醒预览" hidden></aside>
+  <div class="toast" id="toast" role="status" hidden><span id="toast-message"></span><button type="button" id="toast-undo" hidden>撤销</button><button type="button" class="icon-button" data-action="dismiss-toast" aria-label="关闭提示"><span data-icon="close"></span></button></div>
+  <noscript>请启用 JavaScript 以使用拾序。</noscript>
+</body>
+</html>

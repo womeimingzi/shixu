@@ -1,0 +1,34 @@
+Shixu 0.1.0 — Windows desktop planner
+
+GET STARTED
+Extract the entire release ZIP into a folder of your choice.
+Double-click the paw-icon executable (拾序.exe).
+Keep the accompanying files and folders next to the executable.
+No Node.js, Python, browser server, or account is required to use a release.
+
+EVERYDAY USE
+Type an item and press Enter to capture it. Click its title to edit details.
+Daily check-in records today's progress; completing an entire task stops its reminders.
+Weekly events are completed one occurrence at a time.
+The current application interface is in Simplified Chinese.
+
+BACKGROUND AND STARTUP
+Closing the window keeps Shixu in the system tray by default.
+Right-click the tray icon and choose Exit to stop the app and reminders.
+Automatic startup is opt-in in Preferences. Startup launches silently into the tray.
+Starting the app a second time brings the existing window forward.
+
+REMINDERS
+Daily progress: at the time selected for that task.
+Timed events: 10 minutes before the start; date-only events: 09:00 that day.
+Deadlines: 09:00 the day before and on the due date.
+All schedule times currently use UTC+8 (Asia/Taipei).
+The app cannot notify while Windows is asleep, powered off, or the app has exited.
+Still-relevant reminders are checked after the computer resumes.
+Windows Do Not Disturb and notification preferences may suppress toasts.
+
+YOUR DATA
+Records are saved in %APPDATA%\Shixu, separately from the executable.
+Each save retains the preceding version as a backup.
+Preferences offers JSON export, additive import, and an Open data folder action.
+Browser preview records and desktop records do not continuously synchronize.
